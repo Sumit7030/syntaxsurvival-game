@@ -1,0 +1,1975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Syntax Survival</title>
+  <style>
+    :root {
+      --bg: #05070b;
+      --panel: rgba(10, 18, 28, 0.82);
+      --panel-strong: rgba(11, 24, 38, 0.96);
+      --border: rgba(103, 232, 249, 0.28);
+      --text: #ebfbff;
+      --muted: #90b6c2;
+      --cyan: #51f6ff;
+      --green: #47ff9c;
+      --yellow: #ffd45c;
+      --red: #ff5277;
+      --shadow: 0 0 30px rgba(81, 246, 255, 0.16);
+      --danger-shadow: 0 0 30px rgba(255, 82, 119, 0.22);
+      --radius: 24px;
+      --timer-ratio: 1;
+      --stability-width: 100%;
+      --ui-font: "Segoe UI Variable Display", "Segoe UI", "Trebuchet MS", Arial, sans-serif;
+      --display-font: "Bahnschrift", "Arial Nova", "Segoe UI", Arial, sans-serif;
+      --mono-font: "Consolas", "SFMono-Regular", "Menlo", "Monaco", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      font-family: var(--ui-font);
+      background:
+        radial-gradient(circle at top left, rgba(71, 255, 156, 0.12), transparent 30%),
+        radial-gradient(circle at top right, rgba(81, 246, 255, 0.12), transparent 34%),
+        radial-gradient(circle at bottom center, rgba(255, 82, 119, 0.09), transparent 28%),
+        linear-gradient(180deg, #020406 0%, #05070b 36%, #090e14 100%);
+      color: var(--text);
+      overflow: hidden;
+      position: relative;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::before {
+      background:
+        linear-gradient(rgba(81, 246, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(81, 246, 255, 0.03) 1px, transparent 1px);
+      background-size: 34px 34px;
+      mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.9) 10%, rgba(0, 0, 0, 0.9) 90%, transparent 100%);
+    }
+
+    body::after {
+      background: linear-gradient(transparent 0%, rgba(81, 246, 255, 0.06) 50%, transparent 100%);
+      opacity: 0.16;
+      animation: scanline 7s linear infinite;
+    }
+
+    @keyframes scanline {
+      from { transform: translateY(-100%); }
+      to { transform: translateY(100%); }
+    }
+
+    .app-shell {
+      position: relative;
+      z-index: 1;
+      min-height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .screen {
+      width: min(100%, 1080px);
+      display: none;
+      animation: fadeUp 500ms ease;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.985);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(17, 26, 38, 0.94), rgba(7, 12, 20, 0.96));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(16px);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent 25%, rgba(81, 246, 255, 0.06) 50%, transparent 75%);
+      transform: translateX(-100%);
+      animation: shimmer 7s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes shimmer {
+      0%, 70%, 100% { transform: translateX(-100%); }
+      80% { transform: translateX(100%); }
+    }
+
+    .hero {
+      padding: 48px;
+      text-align: center;
+      position: relative;
+      isolation: isolate;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 340px;
+      height: 340px;
+      inset: auto auto -140px 50%;
+      transform: translateX(-50%);
+      background: radial-gradient(circle, rgba(81, 246, 255, 0.16), transparent 65%);
+      filter: blur(10px);
+      z-index: -1;
+    }
+
+    .eyebrow {
+      font-family: var(--mono-font);
+      display: inline-block;
+      color: var(--green);
+      border: 1px solid rgba(71, 255, 156, 0.28);
+      background: rgba(71, 255, 156, 0.07);
+      padding: 8px 14px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      font-size: 0.76rem;
+      margin-bottom: 22px;
+      box-shadow: 0 0 18px rgba(71, 255, 156, 0.14);
+    }
+
+    h1, h2, h3, p {
+      margin: 0;
+    }
+
+    .title {
+      font-family: var(--display-font);
+      font-weight: 800;
+      font-size: clamp(2.8rem, 8vw, 5.8rem);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      line-height: 0.96;
+      text-shadow: 0 0 16px rgba(81, 246, 255, 0.18), 0 0 36px rgba(81, 246, 255, 0.12);
+      margin-bottom: 18px;
+    }
+
+    .title span {
+      color: var(--cyan);
+      display: inline-block;
+      animation: pulseGlow 2.5s ease-in-out infinite;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { filter: drop-shadow(0 0 8px rgba(81, 246, 255, 0.1)); }
+      50% { filter: drop-shadow(0 0 14px rgba(81, 246, 255, 0.4)); }
+    }
+
+    .subtitle {
+      max-width: 700px;
+      margin: 0 auto 28px;
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 1rem;
+    }
+
+    .hero-grid {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .mode-panel {
+      margin: 0 auto 24px;
+      max-width: 760px;
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(8, 15, 23, 0.76);
+      border: 1px solid rgba(81, 246, 255, 0.14);
+      text-align: left;
+    }
+
+    .mode-title {
+      font-family: var(--mono-font);
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      margin-bottom: 14px;
+    }
+
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .mode-button {
+      appearance: none;
+      border: 1px solid rgba(81, 246, 255, 0.14);
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(11, 22, 34, 0.95), rgba(8, 15, 24, 0.98));
+      color: var(--text);
+      padding: 14px 12px;
+      text-align: left;
+      cursor: pointer;
+      transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+
+    .mode-button:hover,
+    .mode-button:focus-visible {
+      transform: translateY(-2px);
+      border-color: rgba(81, 246, 255, 0.48);
+      box-shadow: 0 0 18px rgba(81, 246, 255, 0.12);
+      outline: none;
+    }
+
+    .mode-button.active {
+      border-color: rgba(71, 255, 156, 0.48);
+      background: linear-gradient(180deg, rgba(12, 42, 33, 0.95), rgba(7, 26, 21, 0.98));
+      box-shadow: 0 0 18px rgba(71, 255, 156, 0.14);
+    }
+
+    .mode-button strong {
+      display: block;
+      font-family: var(--display-font);
+      font-size: 1rem;
+      margin-bottom: 6px;
+    }
+
+    .mode-button span {
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.45;
+    }
+
+    .mini-panel {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(81, 246, 255, 0.13);
+      background: rgba(8, 15, 23, 0.72);
+      text-align: left;
+    }
+
+    .mini-panel strong {
+      display: block;
+      color: var(--cyan);
+      margin-bottom: 6px;
+      font-size: 0.92rem;
+    }
+
+    .mini-panel span {
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.55;
+    }
+
+    .button {
+      appearance: none;
+      border: 1px solid rgba(81, 246, 255, 0.35);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(14, 27, 42, 0.98), rgba(8, 16, 26, 0.98));
+      color: var(--text);
+      padding: 15px 24px;
+      font: inherit;
+      cursor: pointer;
+      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background 180ms ease;
+      box-shadow: 0 0 18px rgba(81, 246, 255, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .button:hover,
+    .button:focus-visible {
+      transform: translateY(-2px);
+      border-color: rgba(81, 246, 255, 0.7);
+      box-shadow: 0 0 24px rgba(81, 246, 255, 0.18);
+      outline: none;
+    }
+
+    .button:active {
+      transform: translateY(1px) scale(0.99);
+    }
+
+    .button.primary {
+      background:
+        linear-gradient(180deg, rgba(26, 59, 88, 0.96), rgba(10, 21, 34, 0.98)),
+        linear-gradient(90deg, rgba(81, 246, 255, 0.1), rgba(71, 255, 156, 0.1));
+      min-width: 220px;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      box-shadow: 0 0 28px rgba(81, 246, 255, 0.18), inset 0 0 18px rgba(81, 246, 255, 0.08);
+    }
+
+    .button.primary::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.18), transparent 60%);
+      transform: translateX(-120%);
+      animation: buttonSweep 3.2s linear infinite;
+    }
+
+    @keyframes buttonSweep {
+      0%, 70%, 100% { transform: translateX(-120%); }
+      82% { transform: translateX(120%); }
+    }
+
+    .game-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 290px) minmax(0, 1fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .sidebar,
+    .main-panel {
+      padding: 22px;
+    }
+
+    .sidebar {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .stat-card {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(7, 14, 22, 0.84);
+      border: 1px solid rgba(81, 246, 255, 0.14);
+    }
+
+    .stat-label {
+      font-family: var(--mono-font);
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      margin-bottom: 10px;
+    }
+
+    .stat-value {
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: var(--text);
+      text-shadow: 0 0 14px rgba(81, 246, 255, 0.15);
+    }
+
+    .stat-subvalue {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.5;
+    }
+
+    .stability-track,
+    .timer-track {
+      height: 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .stability-fill,
+    .timer-fill {
+      height: 100%;
+      width: 100%;
+      border-radius: inherit;
+      transition: width 220ms linear, background 220ms ease, box-shadow 220ms ease;
+    }
+
+    .stability-fill {
+      width: var(--stability-width);
+      background: linear-gradient(90deg, #1fd67a, #4dffb3);
+      box-shadow: 0 0 16px rgba(71, 255, 156, 0.22);
+    }
+
+    .timer-fill {
+      width: calc(var(--timer-ratio) * 100%);
+      background: linear-gradient(90deg, rgba(81, 246, 255, 0.95), rgba(81, 246, 255, 0.4));
+      box-shadow: 0 0 14px rgba(81, 246, 255, 0.18);
+    }
+
+    .system-feed {
+      min-height: 124px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .feed-line {
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(81, 246, 255, 0.06);
+      border: 1px solid rgba(81, 246, 255, 0.12);
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .feed-line.positive {
+      border-color: rgba(71, 255, 156, 0.22);
+      color: #a8ffd1;
+    }
+
+    .feed-line.warning {
+      border-color: rgba(255, 212, 92, 0.26);
+      color: #ffe4a0;
+    }
+
+    .feed-line.danger {
+      border-color: rgba(255, 82, 119, 0.26);
+      color: #ffb4c5;
+      box-shadow: 0 0 18px rgba(255, 82, 119, 0.08);
+    }
+
+    .main-panel {
+      display: grid;
+      gap: 18px;
+      position: relative;
+    }
+
+    .hud {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(81, 246, 255, 0.12);
+    }
+
+    .hud-block {
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .hud-block.right {
+      max-width: 200px;
+    }
+
+    .hud-actions {
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-start;
+      flex: 0 0 auto;
+    }
+
+    .button.secondary {
+      min-width: 150px;
+      font-size: 0.84rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      background: linear-gradient(180deg, rgba(28, 17, 22, 0.96), rgba(18, 9, 13, 0.98));
+      border-color: rgba(255, 82, 119, 0.28);
+      box-shadow: 0 0 18px rgba(255, 82, 119, 0.08);
+    }
+
+    .button.secondary:hover,
+    .button.secondary:focus-visible {
+      border-color: rgba(255, 82, 119, 0.58);
+      box-shadow: 0 0 22px rgba(255, 82, 119, 0.14);
+    }
+
+    .status-text {
+      font-family: var(--display-font);
+      font-size: 1rem;
+      color: var(--cyan);
+      min-height: 1.4em;
+      letter-spacing: 0.06em;
+    }
+
+    .category-pill {
+      font-family: var(--mono-font);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 9px 12px;
+      border-radius: 999px;
+      width: fit-content;
+      font-size: 0.76rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      border: 1px solid rgba(81, 246, 255, 0.2);
+      background: rgba(81, 246, 255, 0.08);
+      color: var(--cyan);
+    }
+
+    .question-card {
+      padding: 0;
+      display: grid;
+      gap: 14px;
+    }
+
+    .progress-strip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(8, 18, 29, 0.84), rgba(7, 13, 22, 0.9));
+      border: 1px solid rgba(81, 246, 255, 0.11);
+    }
+
+    .progress-title {
+      font-family: var(--mono-font);
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      margin-right: 8px;
+    }
+
+    .progress-steps {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .progress-step {
+      width: 18px;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    }
+
+    .progress-step.done {
+      background: linear-gradient(90deg, rgba(71, 255, 156, 0.9), rgba(81, 246, 255, 0.9));
+      border-color: rgba(81, 246, 255, 0.36);
+      box-shadow: 0 0 16px rgba(81, 246, 255, 0.18);
+    }
+
+    .progress-step.current {
+      transform: scale(1.18);
+      background: linear-gradient(90deg, rgba(255, 212, 92, 0.95), rgba(255, 121, 89, 0.95));
+      border-color: rgba(255, 212, 92, 0.45);
+      box-shadow: 0 0 18px rgba(255, 212, 92, 0.2);
+    }
+
+    .question-panel {
+      padding: 18px 18px 6px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(10, 21, 34, 0.85), rgba(6, 12, 20, 0.9));
+      border: 1px solid rgba(81, 246, 255, 0.12);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+
+    .question-meta {
+      font-family: var(--mono-font);
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-bottom: 16px;
+      letter-spacing: 0.06em;
+    }
+
+    .question-text {
+      font-family: var(--display-font);
+      font-size: clamp(1.12rem, 2vw, 1.55rem);
+      font-weight: 700;
+      line-height: 1.42;
+      margin: 14px 0 22px;
+      max-width: 860px;
+      letter-spacing: 0.01em;
+      color: #f6fcff;
+      text-wrap: balance;
+    }
+
+    .question-text code,
+    .answer-button code,
+    .question-meta code,
+    .feedback-panel code {
+      font-family: var(--mono-font);
+      font-size: 0.92em;
+      padding: 0.16em 0.42em;
+      border-radius: 8px;
+      background: rgba(81, 246, 255, 0.08);
+      border: 1px solid rgba(81, 246, 255, 0.15);
+      color: #9ef7ff;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .answer-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .answer-button {
+      font-family: var(--ui-font);
+      text-align: left;
+      width: 100%;
+      padding: 16px 18px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: linear-gradient(180deg, rgba(11, 22, 34, 0.95), rgba(8, 15, 24, 0.98));
+      color: var(--text);
+      cursor: pointer;
+      font: inherit;
+      transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease, background 160ms ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .answer-button:hover,
+    .answer-button:focus-visible {
+      transform: translateX(3px);
+      border-color: rgba(81, 246, 255, 0.48);
+      box-shadow: 0 0 22px rgba(81, 246, 255, 0.11);
+      outline: none;
+    }
+
+    .answer-button.correct {
+      border-color: rgba(71, 255, 156, 0.7);
+      background: linear-gradient(180deg, rgba(12, 48, 32, 0.95), rgba(7, 27, 19, 0.98));
+      box-shadow: 0 0 24px rgba(71, 255, 156, 0.16);
+    }
+
+    .answer-button.wrong {
+      border-color: rgba(255, 82, 119, 0.74);
+      background: linear-gradient(180deg, rgba(54, 14, 27, 0.95), rgba(26, 7, 14, 0.98));
+      box-shadow: 0 0 24px rgba(255, 82, 119, 0.16);
+    }
+
+    .answer-button.disabled {
+      opacity: 0.62;
+      cursor: not-allowed;
+    }
+
+    .feedback-panel {
+      min-height: 62px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(81, 246, 255, 0.05);
+      border: 1px solid rgba(81, 246, 255, 0.12);
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+
+    .feedback-panel strong {
+      color: #f5fdff;
+    }
+
+    .feedback-panel.good {
+      border-color: rgba(71, 255, 156, 0.28);
+      color: #b9ffd8;
+      background: rgba(71, 255, 156, 0.07);
+    }
+
+    .feedback-panel.bad {
+      border-color: rgba(255, 82, 119, 0.28);
+      color: #ffc1cf;
+      background: rgba(255, 82, 119, 0.07);
+      box-shadow: var(--danger-shadow);
+    }
+
+    .warning-state .timer-fill {
+      background: linear-gradient(90deg, rgba(255, 82, 119, 0.95), rgba(255, 165, 0, 0.75));
+      box-shadow: 0 0 16px rgba(255, 82, 119, 0.26);
+    }
+
+    .warning-state .status-text {
+      color: #ff9fb5;
+      animation: pulseWarning 0.75s ease-in-out infinite;
+    }
+
+    @keyframes pulseWarning {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.55; }
+    }
+
+    .glitch {
+      animation: screenGlitch 320ms ease;
+    }
+
+    @keyframes screenGlitch {
+      0% { transform: translate(0); filter: hue-rotate(0deg); }
+      20% { transform: translate(-8px, 2px); filter: hue-rotate(45deg); }
+      45% { transform: translate(6px, -3px); filter: hue-rotate(-30deg); }
+      70% { transform: translate(-4px, 1px); filter: hue-rotate(16deg); }
+      100% { transform: translate(0); filter: hue-rotate(0deg); }
+    }
+
+    .danger-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: var(--radius);
+      box-shadow: inset 0 0 0 0 rgba(255, 82, 119, 0.5);
+      opacity: 0;
+      transition: opacity 200ms ease;
+    }
+
+    .critical .danger-overlay {
+      opacity: 1;
+      animation: dangerPulse 1s ease-in-out infinite;
+    }
+
+    @keyframes dangerPulse {
+      0%, 100% { box-shadow: inset 0 0 0 1px rgba(255, 82, 119, 0.34), 0 0 0 rgba(255, 82, 119, 0.1); }
+      50% { box-shadow: inset 0 0 0 2px rgba(255, 82, 119, 0.68), 0 0 36px rgba(255, 82, 119, 0.18); }
+    }
+
+    .game-over {
+      text-align: center;
+      padding: 42px;
+    }
+
+    .game-over .title {
+      font-size: clamp(2.4rem, 6vw, 4.3rem);
+      margin-bottom: 14px;
+    }
+
+    .final-score {
+      font-size: clamp(2rem, 7vw, 3.8rem);
+      color: var(--cyan);
+      margin: 24px 0 10px;
+      text-shadow: 0 0 18px rgba(81, 246, 255, 0.2);
+    }
+
+    .performance-text,
+    .final-message {
+      color: var(--muted);
+      line-height: 1.75;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .final-message {
+      margin-top: 16px;
+      color: #d4f5ff;
+    }
+
+    .game-over-actions {
+      margin-top: 28px;
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .footer-note {
+      font-family: var(--mono-font);
+      margin-top: 24px;
+      color: rgba(144, 182, 194, 0.72);
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+    }
+
+    @media (max-width: 900px) {
+      .game-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .hud {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .hud-block.right {
+        max-width: none;
+      }
+
+      .hero-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .mode-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .hero,
+      .game-over {
+        padding: 28px 22px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .app-shell {
+        padding: 14px;
+      }
+
+      .sidebar,
+      .main-panel {
+        padding: 16px;
+      }
+
+      .title {
+        font-size: 2.4rem;
+      }
+
+      .question-text {
+        font-size: 1rem;
+      }
+
+      .button.primary {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <section id="startScreen" class="screen active">
+      <div class="card hero">
+        <div class="eyebrow">Emergency Protocol // Live</div>
+        <h1 class="title">Syntax <span>Survival</span></h1>
+        <p class="subtitle">
+          The AI core is unstable and its logic is collapsing.
+          Identify errors, fix the syntax, and restore control before everything fails.
+        </p>
+        <div class="mode-panel">
+          <div class="mode-title">Select Syntax Mode</div>
+          <div class="mode-grid">
+            <button class="mode-button active" type="button" data-language="all">
+              <strong>All Syntax</strong>
+              <span>Mixed Python, Java, and HTML syntax questions.</span>
+            </button>
+            <button class="mode-button" type="button" data-language="python">
+              <strong>Python</strong>
+              <span>Only Python syntax questions in this run.</span>
+            </button>
+            <button class="mode-button" type="button" data-language="java">
+              <strong>Java</strong>
+              <span>Only Java syntax questions in this run.</span>
+            </button>
+            <button class="mode-button" type="button" data-language="html">
+              <strong>HTML</strong>
+              <span>Only HTML syntax questions in this run.</span>
+            </button>
+          </div>
+        </div>
+        <button id="startButton" class="button primary">Start Game</button>
+        <div class="hero-grid" aria-hidden="true">
+          <div class="mini-panel">
+            <strong>Pattern Recognition</strong>
+            <span>Detect hidden syntax patterns and restore corrupted AI sequences.</span>
+          </div>
+          <div class="mini-panel">
+            <strong>Logic Resolution</strong>
+            <span>Analyze broken conditions and repair decision-making pathways.</span>
+          </div>
+          <div class="mini-panel">
+            <strong>Code Stabilization</strong>
+            <span>Fix syntax errors and prevent system-wide AI failure.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="gameScreen" class="screen">
+      <div id="gameCard" class="card game-layout">
+        <div class="danger-overlay"></div>
+        <aside class="sidebar">
+          <div class="stat-card">
+            <div class="stat-label">Stability</div>
+            <div id="stabilityValue" class="stat-value">100%</div>
+            <div class="stability-track" aria-hidden="true">
+              <div id="stabilityFill" class="stability-fill"></div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label">Score</div>
+            <div id="scoreValue" class="stat-value">0</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label">Resolved Events</div>
+            <div id="roundValue" class="stat-value">0</div>
+            <div class="stat-subvalue">Complete all syntax incidents to finish the mission.</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label">Current Streak</div>
+            <div id="streakValue" class="stat-value">0</div>
+            <div id="streakHint" class="stat-subvalue">Build a clean streak for stronger operator confidence.</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label">System Feed</div>
+            <div id="systemFeed" class="system-feed"></div>
+          </div>
+        </aside>
+
+        <main class="main-panel">
+          <div class="hud">
+            <div class="hud-block">
+              <div id="categoryLabel" class="category-pill">Pattern Recognition</div>
+              <div id="statusText" class="status-text">System Stabilizing...</div>
+            </div>
+            <div class="hud-block right">
+              <div class="stat-label">Reaction Window</div>
+              <div class="timer-track" aria-hidden="true">
+                <div id="timerFill" class="timer-fill"></div>
+              </div>
+              <div id="timerValue" class="question-meta">25.0 seconds remaining</div>
+            </div>
+            <div class="hud-actions">
+              <button id="quitButton" class="button secondary" type="button">Quit To Home</button>
+            </div>
+          </div>
+
+          <section class="question-card">
+            <div class="progress-strip">
+              <div class="progress-title">Mission Progress</div>
+              <div id="progressSteps" class="progress-steps" aria-hidden="true"></div>
+            </div>
+            <div class="question-panel">
+              <div id="questionMeta" class="question-meta">Threat level calibrating...</div>
+              <h2 id="questionText" class="question-text">Loading first system anomaly...</h2>
+              <div id="answerGrid" class="answer-grid"></div>
+            </div>
+          </section>
+
+          <div id="feedbackPanel" class="feedback-panel">Waiting for your first intervention...</div>
+        </main>
+      </div>
+    </section>
+
+    <section id="gameOverScreen" class="screen">
+      <div class="card game-over">
+        <div class="eyebrow">Containment Report</div>
+        <h2 class="title">Session <span>Complete</span></h2>
+        <div id="finalScore" class="final-score">0</div>
+        <p id="performanceText" class="performance-text"></p>
+        <p id="finalMessage" class="final-message"></p>
+        <div class="game-over-actions">
+          <button id="restartButton" class="button primary">Play Again</button>
+          <button id="homeButton" class="button secondary" type="button">Back To Home</button>
+        </div>
+        <p class="footer-note">Crafted by SK Games Private Limited for premium browser gameplay experiences.</p>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const ui = {
+        screens: {
+          start: document.getElementById("startScreen"),
+          game: document.getElementById("gameScreen"),
+          over: document.getElementById("gameOverScreen")
+        },
+        startButton: document.getElementById("startButton"),
+        restartButton: document.getElementById("restartButton"),
+        homeButton: document.getElementById("homeButton"),
+        quitButton: document.getElementById("quitButton"),
+        gameCard: document.getElementById("gameCard"),
+        categoryLabel: document.getElementById("categoryLabel"),
+        statusText: document.getElementById("statusText"),
+        timerFill: document.getElementById("timerFill"),
+        timerValue: document.getElementById("timerValue"),
+        stabilityValue: document.getElementById("stabilityValue"),
+        stabilityFill: document.getElementById("stabilityFill"),
+        scoreValue: document.getElementById("scoreValue"),
+        roundValue: document.getElementById("roundValue"),
+        streakValue: document.getElementById("streakValue"),
+        streakHint: document.getElementById("streakHint"),
+        questionMeta: document.getElementById("questionMeta"),
+        questionText: document.getElementById("questionText"),
+        answerGrid: document.getElementById("answerGrid"),
+        feedbackPanel: document.getElementById("feedbackPanel"),
+        systemFeed: document.getElementById("systemFeed"),
+        progressSteps: document.getElementById("progressSteps"),
+        finalScore: document.getElementById("finalScore"),
+        performanceText: document.getElementById("performanceText"),
+        finalMessage: document.getElementById("finalMessage")
+      };
+
+      const MAX_QUESTIONS = 10;
+
+      const MODE_LABELS = {
+        all: "All Syntax",
+        python: "Python",
+        java: "Java",
+        html: "HTML"
+      };
+
+      const QUESTION_BANK = [
+        {
+          category: "Pattern Recognition",
+          difficulty: 1,
+          prompt: "Signal trace: 2, 4, 8, 16, ?",
+          options: ["18", "24", "32", "34"],
+          answer: 2,
+          explanation: "Recursive duplication detected. Each value doubles, so the next pulse is 32."
+        },
+        {
+          category: "Pattern Recognition",
+          difficulty: 1,
+          prompt: "Corrupted sequence: A1, C3, E5, ?",
+          options: ["G6", "F7", "G7", "H9"],
+          answer: 2,
+          explanation: "Letters advance by two and digits increase by two. The missing pair is G7."
+        },
+        {
+          category: "Pattern Recognition",
+          difficulty: 2,
+          prompt: "The AI prints: 3, 6, 11, 18, ?",
+          options: ["24", "26", "27", "29"],
+          answer: 2,
+          explanation: "The gaps grow by 2, 3, 4, then 5. Adding 9 to 18 gives 27."
+        },
+        {
+          category: "Pattern Recognition",
+          difficulty: 2,
+          prompt: "Grid values rise as 5, 10, 20, 40. Which fallback value maintains the pattern?",
+          options: ["45", "60", "80", "100"],
+          answer: 2,
+          explanation: "The chain doubles each time. The next stable value is 80."
+        },
+        {
+          category: "Pattern Recognition",
+          difficulty: 3,
+          prompt: "Sequence lock: 1, 2, 6, 24, ?",
+          options: ["48", "72", "96", "120"],
+          answer: 3,
+          explanation: "Factorial escalation: 1!, 2!, 3!, 4!. The next term is 5! = 120."
+        },
+        {
+          category: "Pattern Recognition",
+          difficulty: 3,
+          prompt: "Data shards cycle as red, blue, green, red, blue, green, red, ?",
+          options: ["green", "blue", "red", "yellow"],
+          answer: 0,
+          explanation: "The cycle repeats every three steps. Red is followed by green here."
+        },
+        {
+          category: "Logical Reasoning",
+          difficulty: 1,
+          prompt: "If every bot is a process, and some processes are frozen, which statement must be true?",
+          options: [
+            "All bots are frozen",
+            "Some bots may be frozen",
+            "No process is frozen",
+            "Only bots can freeze"
+          ],
+          answer: 1,
+          explanation: "The overlap allows some bots to be frozen, but it does not guarantee all or none."
+        },
+        {
+          category: "Logical Reasoning",
+          difficulty: 1,
+          prompt: "A door opens only if both the red key and blue key are active. Red is active, blue is not. What happens?",
+          options: ["Door opens", "Door stays shut", "Door opens halfway", "Door resets keys"],
+          answer: 1,
+          explanation: "Both conditions must be true. Missing blue keeps the lock closed."
+        },
+        {
+          category: "Logical Reasoning",
+          difficulty: 2,
+          prompt: "If a patch is safe only when tested and signed, and this patch is tested but unsigned, what is it?",
+          options: ["Safe", "Unsafe", "Ready for launch", "Safe if retried"],
+          answer: 1,
+          explanation: "Safe requires both tested and signed. Missing one condition means unsafe."
+        },
+        {
+          category: "Logical Reasoning",
+          difficulty: 2,
+          prompt: "Three subsystems report: Core says Mirror is lying. Mirror says Echo is lying. Echo says Core and Mirror disagree. Who is definitely truthful if only one can be true?",
+          options: ["Core", "Mirror", "Echo", "Not enough information"],
+          answer: 2,
+          explanation: "If Echo is true, Core and Mirror disagree, making only one of them true. That fits the rule."
+        },
+        {
+          category: "Logical Reasoning",
+          difficulty: 3,
+          prompt: "Protocol A triggers if X or Y is true. Shutdown occurs only if A triggers and Z is false. X is false, Y is true, Z is true. Final state?",
+          options: [
+            "Shutdown occurs",
+            "Protocol A triggers but no shutdown",
+            "Nothing triggers",
+            "Immediate reboot"
+          ],
+          answer: 1,
+          explanation: "Y makes A true, but Z being true blocks the shutdown condition."
+        },
+        {
+          category: "Logical Reasoning",
+          difficulty: 3,
+          prompt: "Only unstable modules emit red alerts. Module K emitted no red alert. What can you conclude?",
+          options: [
+            "Module K is stable",
+            "Module K is unstable",
+            "Module K may still be unstable",
+            "All modules are stable"
+          ],
+          answer: 2,
+          explanation: "Only unstable modules emit red alerts does not mean all unstable modules must emit them."
+        },
+        {
+          category: "Code Debugging",
+          difficulty: 1,
+          prompt: "Python syntax check: what fixes this line? `print('AI stable'`",
+          options: [
+            "Add a closing parenthesis",
+            "Add a colon at the end",
+            "Replace `print` with `echo`",
+            "Use square brackets instead"
+          ],
+          answer: 0,
+          explanation: "The Python `print()` call is missing its final `)`, so the line needs a closing parenthesis."
+        },
+        {
+          category: "Code Debugging",
+          difficulty: 1,
+          prompt: "Java syntax check: which version is correct?",
+          options: [
+            "`System.out.println('Hello');`",
+            "`System.out.println(\"Hello\");`",
+            "`System.out println(\"Hello\");`",
+            "`System.out.println(\"Hello\")`"
+          ],
+          answer: 1,
+          explanation: "Java strings use double quotes, and the statement should end with a semicolon."
+        },
+        {
+          category: "Code Debugging",
+          difficulty: 2,
+          prompt: "HTML syntax check: what is the correct closing tag for this line? `<h1>System Alert ...`",
+          options: [
+            "`</head>`",
+            "`</h1>`",
+            "`</title>`",
+            "`</p>`"
+          ],
+          answer: 1,
+          explanation: "An `<h1>` element must close with `</h1>`."
+        },
+        {
+          category: "Code Debugging",
+          difficulty: 2,
+          prompt: "Python syntax check: what is missing here? `if score > 5`",
+          options: [
+            "A semicolon",
+            "A closing brace",
+            "A colon",
+            "Double quotes"
+          ],
+          answer: 2,
+          explanation: "Python conditionals need a colon at the end: `if score > 5:`."
+        },
+        {
+          category: "Code Debugging",
+          difficulty: 3,
+          prompt: "Java syntax check: what fixes this class line? `public class Bot { public static void main(String[] args) { System.out.println(\"Run\") } }`",
+          options: [
+            "Add a semicolon after `println(\"Run\")`",
+            "Replace `String[]` with `string[]`",
+            "Remove `public` from the class",
+            "Change braces to parentheses"
+          ],
+          answer: 0,
+          explanation: "The `println` statement is missing its trailing semicolon, which Java requires."
+        },
+        {
+          category: "Code Debugging",
+          difficulty: 3,
+          prompt: "HTML syntax check: which line is valid?",
+          options: [
+            "`<img src='bot.png'></img>`",
+            "`<p>AI online</p>`",
+            "`<div>Warning<div>`",
+            "`<button>Run</buton>`"
+          ],
+          answer: 1,
+          explanation: "That paragraph element has a proper opening and closing tag, making it the valid HTML line here."
+        },
+        {
+          category: "Code Debugging",
+          difficulty: 1,
+          prompt: "Python syntax check: which line is correct?",
+          options: [
+            "`for i in range(3)`",
+            "`for i in range(3):`",
+            "`for (i in range(3)):`",
+            "`for i to range(3):`"
+          ],
+          answer: 1,
+          explanation: "A Python `for` loop needs a colon at the end of the statement."
+        },
+        {
+          category: "Code Debugging",
+          difficulty: 2,
+          prompt: "Java syntax check: which declaration is valid?",
+          options: [
+            "`int count = 5`",
+            "`int count := 5;`",
+            "`int count = 5;`",
+            "`integer count = 5;`"
+          ],
+          answer: 2,
+          explanation: "Java uses `int`, a single `=`, and a trailing semicolon."
+        },
+        {
+          category: "Code Debugging",
+          difficulty: 2,
+          prompt: "HTML syntax check: what fixes this opening tag? `<img src='bot.png'>`",
+          options: [
+            "Nothing. This line is already valid HTML.",
+            "It must end with `</img>`",
+            "It must be `<img>bot.png</img>`",
+            "Replace it with `<image src='bot.png'>`"
+          ],
+          answer: 0,
+          explanation: "The `<img>` element is a void element, so it does not need a closing tag in HTML."
+        },
+        {
+          category: "Code Debugging",
+          difficulty: 3,
+          prompt: "Python syntax check: what is the correct function header?",
+          options: [
+            "`def repair[]:`",
+            "`function repair():`",
+            "`def repair():`",
+            "`def repair() {`"
+          ],
+          answer: 2,
+          explanation: "Python functions begin with `def`, use parentheses, and end the header with a colon."
+        },
+        {
+          category: "Quick Decision",
+          difficulty: 1,
+          prompt: "The cooling loop spikes but the backup fan is online. Trigger full shutdown?",
+          options: ["Yes", "No", "Only disable UI", "Delete logs"],
+          answer: 1,
+          explanation: "The backup is handling load. A full shutdown would be unnecessary overreaction."
+        },
+        {
+          category: "Quick Decision",
+          difficulty: 1,
+          prompt: "A process asks for admin access without explanation. Approve immediately?",
+          options: ["Yes", "No", "Approve forever", "Share root password"],
+          answer: 1,
+          explanation: "Unexplained privilege escalation is a direct risk. Deny it."
+        },
+        {
+          category: "Quick Decision",
+          difficulty: 2,
+          prompt: "The AI suggests skipping validation to save 2 seconds during a crisis. Accept?",
+          options: ["Yes", "No", "Maybe later", "Only skip half"],
+          answer: 1,
+          explanation: "Skipping validation during instability amplifies failure risk."
+        },
+        {
+          category: "Quick Decision",
+          difficulty: 2,
+          prompt: "A noncritical visual module crashes, but the core is stable. Reboot everything?",
+          options: ["Yes", "No", "Wipe settings", "Disable power"],
+          answer: 1,
+          explanation: "Contain the fault. A full reboot creates unnecessary downtime."
+        },
+        {
+          category: "Quick Decision",
+          difficulty: 3,
+          prompt: "Telemetry packets are delayed, but checksum validation still passes. Abort sync?",
+          options: ["Yes", "No", "Delete queue", "Freeze all modules"],
+          answer: 1,
+          explanation: "Delay alone is not corruption. Monitor and continue rather than forcing a worse failure."
+        },
+        {
+          category: "Quick Decision",
+          difficulty: 3,
+          prompt: "An AI subroutine starts self-replicating in a sandbox with no external access. Immediate containment burn?",
+          options: ["Yes", "No", "Give it more memory", "Promote to production"],
+          answer: 0,
+          explanation: "Self-replication is a strong containment trigger even inside a sandbox."
+        }
+      ];
+
+      const SYNTAX_TEMPLATE_DATA = {
+        pythonVars: ["score", "count", "level", "energy", "signal", "status"],
+        pythonMessages: ["AI stable", "System ready", "Core synced", "Debug mode", "Recovery started"],
+        pythonFunctions: ["repair", "stabilize", "reboot", "scan", "recover", "validate"],
+        pythonRanges: [3, 4, 5, 6, 8],
+        javaClasses: ["Bot", "Agent", "Core", "Scanner", "Monitor", "Runner"],
+        javaVars: ["count", "score", "lives", "power", "level", "total"],
+        javaTexts: ["Hello", "System Online", "AI Ready", "Debug Active", "Recovery OK"],
+        htmlTags: ["h1", "p", "div", "section", "span", "button"],
+        htmlVoidTags: ["img", "br", "hr", "input", "meta", "link"],
+        htmlLabels: ["Launch", "Recover", "Analyze", "Stabilize", "Reboot", "Scan"]
+      };
+
+      function createSyntaxQuestion(difficulty, prompt, options, answer, explanation) {
+        return {
+          category: "Code Debugging",
+          difficulty,
+          prompt,
+          options,
+          answer,
+          explanation
+        };
+      }
+
+      function buildGeneratedSyntaxQuestions() {
+        const generated = [];
+
+        SYNTAX_TEMPLATE_DATA.pythonMessages.forEach((message, index) => {
+          generated.push(createSyntaxQuestion(
+            1,
+            `Python syntax check: what fixes this line? \`print("${message}"\``,
+            [
+              "Add a closing parenthesis",
+              "Add a colon at the end",
+              "Replace `print` with `echo`",
+              "Use square brackets instead"
+            ],
+            0,
+            "The Python `print()` call is missing its final `)`, so the line needs a closing parenthesis."
+          ));
+        });
+
+        SYNTAX_TEMPLATE_DATA.pythonVars.forEach((variable, index) => {
+          generated.push(createSyntaxQuestion(
+            index % 2 === 0 ? 1 : 2,
+            `Python syntax check: what is missing here? \`if ${variable} > 5\``,
+            [
+              "A semicolon",
+              "A closing brace",
+              "A colon",
+              "Double quotes"
+            ],
+            2,
+            "Python conditionals need a colon at the end of the statement."
+          ));
+        });
+
+        SYNTAX_TEMPLATE_DATA.pythonFunctions.forEach((fn, index) => {
+          generated.push(createSyntaxQuestion(
+            index < 3 ? 2 : 3,
+            `Python syntax check: what is the correct function header for ${fn}?`,
+            [
+              `\`def ${fn}[]:\``,
+              `\`function ${fn}():\``,
+              `\`def ${fn}():\``,
+              `\`def ${fn}() {\``
+            ],
+            2,
+            "Python functions begin with `def`, use parentheses, and end the header with a colon."
+          ));
+        });
+
+        SYNTAX_TEMPLATE_DATA.pythonRanges.forEach((range, index) => {
+          generated.push(createSyntaxQuestion(
+            index < 2 ? 1 : 2,
+            `Python syntax check: which line is correct for looping ${range} times?`,
+            [
+              `\`for i in range(${range})\``,
+              `\`for i in range(${range}):\``,
+              `\`for (i in range(${range})):\``,
+              `\`for i to range(${range}):\``
+            ],
+            1,
+            "A Python `for` loop header ends with a colon."
+          ));
+        });
+
+        SYNTAX_TEMPLATE_DATA.javaTexts.forEach((text, index) => {
+          generated.push(createSyntaxQuestion(
+            index < 3 ? 1 : 2,
+            `Java syntax check: which version correctly prints "${text}"?`,
+            [
+              `\`System.out.println('${text}');\``,
+              `\`System.out.println("${text}");\``,
+              `\`System.out println("${text}");\``,
+              `\`System.out.println("${text}")\``
+            ],
+            1,
+            "Java strings use double quotes, and print statements end with a semicolon."
+          ));
+        });
+
+        SYNTAX_TEMPLATE_DATA.javaVars.forEach((variable, index) => {
+          const value = (index + 2) * 3;
+          generated.push(createSyntaxQuestion(
+            index < 2 ? 1 : 2,
+            `Java syntax check: which declaration is valid for variable \`${variable}\`?`,
+            [
+              `\`int ${variable} = ${value}\``,
+              `\`int ${variable} := ${value};\``,
+              `\`int ${variable} = ${value};\``,
+              `\`integer ${variable} = ${value};\``
+            ],
+            2,
+            "Java uses `int`, a single `=`, and a trailing semicolon for this declaration."
+          ));
+        });
+
+        SYNTAX_TEMPLATE_DATA.javaClasses.forEach((className, index) => {
+          generated.push(createSyntaxQuestion(
+            index < 3 ? 2 : 3,
+            `Java syntax check: what fixes this class line? \`public class ${className} { public static void main(String[] args) { System.out.println("Run") } }\``,
+            [
+              "Add a semicolon after `println(\"Run\")`",
+              "Replace `String[]` with `string[]`",
+              "Remove `public` from the class",
+              "Change braces to parentheses"
+            ],
+            0,
+            "The `println` statement is missing its trailing semicolon, which Java requires."
+          ));
+        });
+
+        SYNTAX_TEMPLATE_DATA.htmlTags.forEach((tag, index) => {
+          generated.push(createSyntaxQuestion(
+            index < 2 ? 1 : 2,
+            `HTML syntax check: what is the correct closing tag for this line? \`<${tag}>System Alert ...\``,
+            [
+              "`</head>`",
+              `\`</${tag}>\``,
+              "`</title>`",
+              "`</p>`"
+            ],
+            1,
+            `A \`<${tag}>\` element must close with \`</${tag}>\`.`
+          ));
+        });
+
+        SYNTAX_TEMPLATE_DATA.htmlVoidTags.forEach((tag, index) => {
+          generated.push(createSyntaxQuestion(
+            index < 3 ? 2 : 3,
+            `HTML syntax check: what fixes this opening tag? \`<${tag}>\``,
+            [
+              "Nothing. This line is already valid HTML.",
+              `It must end with \`</${tag}>\``,
+              `It must be \`<${tag}>content</${tag}>\``,
+              `Replace it with \`<image>\``
+            ],
+            0,
+            `The \`<${tag}>\` element is a void element, so it does not need a closing tag in HTML.`
+          ));
+        });
+
+        SYNTAX_TEMPLATE_DATA.htmlLabels.forEach((label, index) => {
+          generated.push(createSyntaxQuestion(
+            index < 3 ? 1 : 2,
+            `HTML syntax check: which button line is valid for label "${label}"?`,
+            [
+              `\`<button>${label}</buton>\``,
+              `\`<button>${label}</button>\``,
+              `\`<button>${label}<button>\``,
+              `\`<btn>${label}</btn>\``
+            ],
+            1,
+            "A button element needs a correct opening and closing `button` tag."
+          ));
+        });
+
+        return generated;
+      }
+
+      function shuffleArray(items) {
+        const copy = [...items];
+        for (let i = copy.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        return copy;
+      }
+
+      const game = {
+        score: 0,
+        stability: 100,
+        round: 0,
+        currentQuestion: null,
+        sessionQuestions: [],
+        selectedLanguage: "all",
+        streak: 0,
+        bestStreak: 0,
+        timerLimit: 25,
+        timeLeft: 25,
+        timerInterval: null,
+        timerStartedAt: 0,
+        answeringLocked: false,
+        lowTimeBeeped: false,
+        questionHistory: [],
+        feed: [],
+        audioContext: null
+      };
+
+      const messages = {
+        idle: [
+          "System Stabilizing...",
+          "Neural alignment in progress...",
+          "Containment matrix holding steady..."
+        ],
+        correct: [
+          "AI Recovery Successful!",
+          "Logic thread restored.",
+          "Subsystem synchronized."
+        ],
+        wrong: [
+          "Critical Error Detected!",
+          "Containment drift increasing.",
+          "Fault propagation accelerating."
+        ],
+        timeout: [
+          "Reaction window missed.",
+          "Stability leak detected.",
+          "Autonomous cascade expanding."
+        ],
+        critical: [
+          "Core integrity failing!",
+          "Emergency protocols flashing red!",
+          "Final containment threshold approaching!"
+        ]
+      };
+
+      function showScreen(name) {
+        Object.values(ui.screens).forEach((screen) => screen.classList.remove("active"));
+        ui.screens[name].classList.add("active");
+      }
+
+      function returnToHome() {
+        clearInterval(game.timerInterval);
+        game.answeringLocked = true;
+        game.currentQuestion = null;
+        ui.gameCard.classList.remove("warning-state", "critical", "glitch");
+        showScreen("start");
+      }
+
+      function initializeGame() {
+        clearInterval(game.timerInterval);
+        game.score = 0;
+        game.stability = 100;
+        game.round = 0;
+        game.currentQuestion = null;
+        game.sessionQuestions = buildSessionQuestions();
+        game.streak = 0;
+        game.bestStreak = 0;
+        game.timerLimit = 25;
+        game.timeLeft = 25;
+        game.answeringLocked = false;
+        game.lowTimeBeeped = false;
+        game.questionHistory = [];
+        game.feed = [];
+        ui.feedbackPanel.textContent = "Containment interface initialized. Awaiting anomaly...";
+        ui.feedbackPanel.className = "feedback-panel";
+        setStatus(randomFrom(messages.idle));
+        renderFeed("System boot sequence complete.", "positive");
+        renderFeed("Anomaly detectors online.", "");
+        updateHUD();
+        showScreen("game");
+        nextQuestion();
+      }
+
+      function getDifficultyTier() {
+        const progress = game.round;
+        const jitter = Math.random();
+        if (progress >= 10 && jitter > 0.2) return 3;
+        if (progress >= 5 && jitter > 0.28) return 2;
+        return 1;
+      }
+
+      function getTimerForRound() {
+        return 25;
+      }
+
+      function buildSessionQuestions() {
+        const fixedSyntaxQuestions = QUESTION_BANK.filter((question) => question.category === "Code Debugging");
+        const generatedSyntaxQuestions = buildGeneratedSyntaxQuestions();
+        const combined = shuffleArray(
+          [...fixedSyntaxQuestions, ...generatedSyntaxQuestions].filter((question) => {
+            if (game.selectedLanguage === "all") return true;
+            return detectQuestionLanguage(question) === game.selectedLanguage;
+          })
+        );
+        const uniqueQuestions = [];
+        const seenPrompts = new Set();
+
+        combined.forEach((question) => {
+          if (uniqueQuestions.length >= MAX_QUESTIONS) return;
+          if (seenPrompts.has(question.prompt)) return;
+          seenPrompts.add(question.prompt);
+          uniqueQuestions.push(question);
+        });
+
+        return uniqueQuestions;
+      }
+
+      function nextQuestion() {
+        if (game.round >= MAX_QUESTIONS) {
+          endGame();
+          return;
+        }
+
+        game.answeringLocked = false;
+        game.lowTimeBeeped = false;
+        game.timerLimit = getTimerForRound();
+        game.timeLeft = game.timerLimit;
+
+        game.currentQuestion = game.sessionQuestions[game.round];
+        if (!game.currentQuestion) {
+          endGame();
+          return;
+        }
+        game.questionHistory.push(game.currentQuestion.prompt);
+
+        ui.categoryLabel.textContent = `${MODE_LABELS[game.selectedLanguage]} Mode`;
+        ui.questionText.innerHTML = formatPromptText(game.currentQuestion.prompt);
+        ui.questionMeta.textContent = `Syntax Challenge ${game.round + 1} / ${MAX_QUESTIONS} // Level ${Math.min(3, Math.max(1, game.currentQuestion.difficulty))}`;
+        ui.answerGrid.innerHTML = "";
+
+        game.currentQuestion.options.forEach((option, index) => {
+          const button = document.createElement("button");
+          button.className = "answer-button";
+          button.type = "button";
+          button.innerHTML = `<strong>${String.fromCharCode(65 + index)}.</strong> ${formatPromptText(option)}`;
+          button.addEventListener("click", () => handleAnswer(index, button));
+          ui.answerGrid.appendChild(button);
+        });
+
+        setStatus(randomFrom(messages.idle));
+        startTimer();
+        updateHUD();
+      }
+
+      function startTimer(preserveElapsed = false) {
+        clearInterval(game.timerInterval);
+        if (!preserveElapsed) {
+          game.timerStartedAt = performance.now();
+        }
+        ui.gameCard.classList.remove("warning-state");
+
+        game.timerInterval = setInterval(() => {
+          const elapsed = (performance.now() - game.timerStartedAt) / 1000;
+          game.timeLeft = Math.max(0, game.timerLimit - elapsed);
+          updateTimerUI();
+
+          if (game.timeLeft <= 3 && !game.lowTimeBeeped) {
+            game.lowTimeBeeped = true;
+            ui.gameCard.classList.add("warning-state");
+            setStatus(randomFrom(messages.critical));
+            playTone("warning");
+          }
+
+          if (game.timeLeft <= 0) {
+            clearInterval(game.timerInterval);
+            handleTimeout();
+          }
+        }, 50);
+      }
+
+      function handleAnswer(selectedIndex, selectedButton) {
+        if (game.answeringLocked || !game.currentQuestion) return;
+
+        game.answeringLocked = true;
+        clearInterval(game.timerInterval);
+        const buttons = [...ui.answerGrid.children];
+        const isCorrect = selectedIndex === game.currentQuestion.answer;
+        playTone("click");
+
+        buttons.forEach((button, index) => {
+          button.classList.add("disabled");
+          button.disabled = true;
+          if (index === game.currentQuestion.answer) {
+            button.classList.add("correct");
+          }
+        });
+
+        if (isCorrect) {
+          game.score += 10;
+          game.stability = Math.min(100, game.stability + 5);
+          game.streak += 1;
+          game.bestStreak = Math.max(game.bestStreak, game.streak);
+          selectedButton.classList.add("correct");
+          setStatus(randomFrom(messages.correct));
+          setFeedback(`<strong>Correct.</strong> ${game.currentQuestion.explanation} Stability +5 | Score +10`, true);
+          renderFeed(`Round ${game.round + 1}: recovery action succeeded.`, "positive");
+        } else {
+          game.stability -= 10;
+          game.streak = 0;
+          selectedButton.classList.add("wrong");
+          triggerGlitch();
+          setStatus(randomFrom(messages.wrong));
+          setFeedback(`<strong>Wrong choice.</strong> ${game.currentQuestion.explanation} Stability -10`, false);
+          renderFeed(`Round ${game.round + 1}: logic fault amplified.`, "danger");
+        }
+
+        game.round += 1;
+        updateHUD();
+        scheduleNextState();
+      }
+
+      function handleTimeout() {
+        if (game.answeringLocked || !game.currentQuestion) return;
+
+        game.answeringLocked = true;
+        game.stability -= 10;
+        game.streak = 0;
+        triggerGlitch();
+        setStatus(randomFrom(messages.timeout));
+        setFeedback(`<strong>Timeout.</strong> ${game.currentQuestion.explanation} Stability -10`, false);
+        renderFeed(`Round ${game.round + 1}: no intervention received.`, "warning");
+
+        [...ui.answerGrid.children].forEach((button, index) => {
+          button.classList.add("disabled");
+          button.disabled = true;
+          if (index === game.currentQuestion.answer) {
+            button.classList.add("correct");
+          }
+        });
+
+        game.round += 1;
+        updateHUD();
+        scheduleNextState();
+      }
+
+      function scheduleNextState() {
+        setTimeout(() => {
+          if (game.round >= MAX_QUESTIONS) {
+            endGame();
+          } else {
+            nextQuestion();
+          }
+        }, 1500);
+      }
+
+      function endGame() {
+        clearInterval(game.timerInterval);
+        ui.finalScore.textContent = `${game.score} pts`;
+        ui.performanceText.textContent = getPerformanceSummary();
+        ui.finalMessage.textContent = getFinalMessage();
+        setStatus("Containment session terminated.");
+        playTone("gameover");
+        showScreen("over");
+      }
+
+      function getPerformanceSummary() {
+        if (game.score >= 60) {
+          return `Elite syntax recovery performance. You cleared the full debugging sequence with a best streak of ${game.bestStreak}.`;
+        }
+        if (game.score >= 40) {
+          return `Strong syntax containment work. Most compiler-level faults were repaired before the rogue system spread further. Best streak: ${game.bestStreak}.`;
+        }
+        if (game.score >= 20) {
+          return `Partial stabilization achieved. You fixed some syntax faults, but the AI still leaked instability through the stack. Best streak: ${game.bestStreak}.`;
+        }
+        return `Containment pressure stayed high. Too many syntax faults slipped through before the final review window closed. Best streak: ${game.bestStreak}.`;
+      }
+
+      function getFinalMessage() {
+        if (game.score >= 60) return "AI Recovery Successful! All syntax checkpoints completed.";
+        if (game.score >= 40) return "System bruised, but standing. Most syntax errors were corrected in time.";
+        if (game.score >= 20) return "Critical systems remain online. A cleaner syntax pass could fully stabilize the core.";
+        return "Critical Error Detected! The rogue intelligence breached the final safety threshold.";
+      }
+
+      function updateHUD() {
+        ui.scoreValue.textContent = String(game.score);
+        ui.roundValue.textContent = `${game.round}/${MAX_QUESTIONS}`;
+        ui.streakValue.textContent = String(game.streak);
+        ui.stabilityValue.textContent = `${Math.max(0, game.stability)}%`;
+        ui.stabilityFill.style.width = `${Math.max(0, game.stability)}%`;
+        ui.streakHint.textContent = game.streak >= 3
+          ? `Excellent rhythm. Best streak ${game.bestStreak}.`
+          : "Build a clean streak for stronger operator confidence.";
+
+        ui.progressSteps.innerHTML = "";
+        for (let index = 0; index < MAX_QUESTIONS; index += 1) {
+          const step = document.createElement("span");
+          step.className = "progress-step";
+          if (index < game.round) {
+            step.classList.add("done");
+          } else if (index === game.round && game.round < MAX_QUESTIONS) {
+            step.classList.add("current");
+          }
+          ui.progressSteps.appendChild(step);
+        }
+
+        if (game.stability > 60) {
+          ui.stabilityFill.style.background = "linear-gradient(90deg, #1fd67a, #4dffb3)";
+          ui.stabilityFill.style.boxShadow = "0 0 16px rgba(71, 255, 156, 0.22)";
+          ui.gameCard.classList.remove("critical");
+        } else if (game.stability > 30) {
+          ui.stabilityFill.style.background = "linear-gradient(90deg, #ffc83a, #ffe28b)";
+          ui.stabilityFill.style.boxShadow = "0 0 16px rgba(255, 212, 92, 0.22)";
+          ui.gameCard.classList.remove("critical");
+        } else {
+          ui.stabilityFill.style.background = "linear-gradient(90deg, #ff4f72, #ff7d58)";
+          ui.stabilityFill.style.boxShadow = "0 0 16px rgba(255, 82, 119, 0.28)";
+          ui.gameCard.classList.add("critical");
+        }
+
+        updateTimerUI();
+      }
+
+      function updateTimerUI() {
+        const ratio = game.timerLimit ? game.timeLeft / game.timerLimit : 0;
+        ui.timerFill.style.width = `${Math.max(0, ratio) * 100}%`;
+        ui.timerValue.textContent = `${Math.max(0, game.timeLeft).toFixed(1)} seconds remaining`;
+      }
+
+      function setStatus(message) {
+        ui.statusText.textContent = message;
+      }
+
+      function setFeedback(message, positive) {
+        ui.feedbackPanel.innerHTML = message;
+        ui.feedbackPanel.className = positive ? "feedback-panel good" : "feedback-panel bad";
+      }
+
+      function renderFeed(message, tone) {
+        game.feed.unshift({ message, tone });
+        game.feed = game.feed.slice(0, 4);
+        ui.systemFeed.innerHTML = "";
+
+        game.feed.forEach((entry) => {
+          const line = document.createElement("div");
+          line.className = `feed-line ${entry.tone}`.trim();
+          line.textContent = entry.message;
+          ui.systemFeed.appendChild(line);
+        });
+      }
+
+      function triggerGlitch() {
+        ui.gameCard.classList.remove("glitch");
+        void ui.gameCard.offsetWidth;
+        ui.gameCard.classList.add("glitch");
+      }
+
+      function randomFrom(list) {
+        return list[Math.floor(Math.random() * list.length)];
+      }
+
+      function formatPromptText(text) {
+        return text.replace(/`([^`]+)`/g, (_, snippet) => `<code>${escapeHtml(snippet)}</code>`);
+      }
+
+      function escapeHtml(text) {
+        return text
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      function detectQuestionLanguage(question) {
+        if (question.prompt.startsWith("Python syntax check")) return "python";
+        if (question.prompt.startsWith("Java syntax check")) return "java";
+        if (question.prompt.startsWith("HTML syntax check")) return "html";
+        return "all";
+      }
+
+      function setLanguageMode(language) {
+        game.selectedLanguage = language;
+        document.querySelectorAll(".mode-button").forEach((button) => {
+          button.classList.toggle("active", button.dataset.language === language);
+        });
+      }
+
+      function ensureAudio() {
+        if (!game.audioContext) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) {
+            game.audioContext = new AudioCtx();
+          }
+        }
+
+        if (game.audioContext && game.audioContext.state === "suspended") {
+          game.audioContext.resume().catch(() => {});
+        }
+      }
+
+      function playTone(type) {
+        ensureAudio();
+        if (!game.audioContext) return;
+
+        const ctx = game.audioContext;
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        const now = ctx.currentTime;
+
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
+
+        if (type === "click") {
+          oscillator.type = "triangle";
+          oscillator.frequency.setValueAtTime(640, now);
+          oscillator.frequency.exponentialRampToValueAtTime(420, now + 0.08);
+          gainNode.gain.setValueAtTime(0.0001, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.05, now + 0.01);
+          gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
+          oscillator.start(now);
+          oscillator.stop(now + 0.11);
+          return;
+        }
+
+        if (type === "warning") {
+          oscillator.type = "sawtooth";
+          oscillator.frequency.setValueAtTime(880, now);
+          oscillator.frequency.exponentialRampToValueAtTime(620, now + 0.25);
+          gainNode.gain.setValueAtTime(0.0001, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.045, now + 0.03);
+          gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
+          oscillator.start(now);
+          oscillator.stop(now + 0.3);
+          return;
+        }
+
+        oscillator.type = "square";
+        oscillator.frequency.setValueAtTime(320, now);
+        oscillator.frequency.exponentialRampToValueAtTime(120, now + 0.6);
+        gainNode.gain.setValueAtTime(0.0001, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.055, now + 0.02);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.64);
+        oscillator.start(now);
+        oscillator.stop(now + 0.66);
+      }
+
+      ui.startButton.addEventListener("click", initializeGame);
+      ui.restartButton.addEventListener("click", initializeGame);
+      ui.homeButton.addEventListener("click", returnToHome);
+      ui.quitButton.addEventListener("click", returnToHome);
+      document.querySelectorAll(".mode-button").forEach((button) => {
+        button.addEventListener("click", () => setLanguageMode(button.dataset.language));
+      });
+
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden && ui.screens.game.classList.contains("active") && !game.answeringLocked) {
+          clearInterval(game.timerInterval);
+        } else if (!document.hidden && ui.screens.game.classList.contains("active") && !game.answeringLocked && game.currentQuestion) {
+          game.timerStartedAt = performance.now() - (game.timerLimit - game.timeLeft) * 1000;
+          startTimer(true);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
