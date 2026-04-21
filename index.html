@@ -270,6 +270,12 @@
       line-height: 1.45;
     }
 
+    .selector-stack {
+      display: grid;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
     .mini-panel {
       padding: 16px;
       border-radius: 18px;
@@ -484,6 +490,10 @@
       justify-content: flex-end;
       align-items: flex-start;
       flex: 0 0 auto;
+    }
+
+    .mobile-action-bar {
+      display: none;
     }
 
     .button.secondary {
@@ -791,17 +801,53 @@
     }
 
     @media (max-width: 900px) {
+      body {
+        overflow-y: auto;
+      }
+
+      .app-shell {
+        min-height: auto;
+        align-items: start;
+      }
+
+      .screen {
+        width: 100%;
+      }
+
       .game-layout {
         grid-template-columns: 1fr;
+        gap: 14px;
       }
 
       .hud {
         flex-direction: column;
         align-items: stretch;
+        padding: 14px;
+        border-radius: 18px;
+        background: rgba(7, 14, 22, 0.78);
+        border: 1px solid rgba(81, 246, 255, 0.1);
       }
 
       .hud-block.right {
         max-width: none;
+      }
+
+      .hud-actions {
+        justify-content: stretch;
+      }
+
+      .main-panel {
+        order: 1;
+      }
+
+      .sidebar {
+        order: 2;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .sidebar .stat-card:last-child {
+        grid-column: 1 / -1;
       }
 
       .hero-grid {
@@ -819,25 +865,152 @@
     }
 
     @media (max-width: 560px) {
+      body {
+        overflow-y: auto;
+      }
+
       .app-shell {
-        padding: 14px;
+        padding: 10px;
       }
 
       .sidebar,
       .main-panel {
-        padding: 16px;
+        padding: 14px;
+      }
+
+      .main-panel {
+        padding-bottom: 94px;
+      }
+
+      .hero,
+      .game-over {
+        padding: 22px 16px;
       }
 
       .title {
-        font-size: 2.4rem;
+        font-size: 2.15rem;
+        letter-spacing: 0.05em;
       }
 
       .question-text {
         font-size: 1rem;
+        line-height: 1.48;
       }
 
-      .button.primary {
+      .subtitle {
+        font-size: 0.94rem;
+        line-height: 1.65;
+      }
+
+      .mode-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .mode-panel,
+      .mini-panel,
+      .question-panel,
+      .progress-strip,
+      .stat-card,
+      .feedback-panel {
+        border-radius: 16px;
+      }
+
+      .sidebar {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar .stat-card:last-child {
+        grid-column: auto;
+      }
+
+      .progress-strip {
+        padding: 12px;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+
+      .progress-strip::-webkit-scrollbar {
+        display: none;
+      }
+
+      .progress-steps {
+        flex-wrap: nowrap;
+        min-width: max-content;
+      }
+
+      .question-meta {
+        font-size: 0.8rem;
+      }
+
+      .answer-button {
+        min-height: 64px;
+        padding: 14px 15px;
+        font-size: 0.95rem;
+      }
+
+      .answer-button:hover,
+      .answer-button:focus-visible {
+        transform: none;
+      }
+
+      .button,
+      .button.primary,
+      .button.secondary {
         width: 100%;
+        min-width: 0;
+      }
+
+      .hud-actions,
+      .game-over-actions {
+        width: 100%;
+      }
+
+      .hud-actions {
+        display: none;
+      }
+
+      .game-over-actions {
+        flex-direction: column;
+      }
+
+      .status-text {
+        font-size: 0.92rem;
+      }
+
+      .category-pill {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .stat-value {
+        font-size: 1.6rem;
+      }
+
+      .mobile-action-bar {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        position: sticky;
+        bottom: 0;
+        z-index: 5;
+        margin-top: 8px;
+        padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 0px));
+        background: linear-gradient(180deg, rgba(5, 7, 11, 0), rgba(5, 7, 11, 0.92) 28%, rgba(5, 7, 11, 0.98) 100%);
+        backdrop-filter: blur(12px);
+      }
+
+      .mobile-action-bar .button {
+        min-height: 54px;
+        border-radius: 16px;
+      }
+
+      .game-over .game-over-actions {
+        position: sticky;
+        bottom: 0;
+        z-index: 5;
+        padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 0px));
+        background: linear-gradient(180deg, rgba(5, 7, 11, 0), rgba(5, 7, 11, 0.92) 28%, rgba(5, 7, 11, 0.98) 100%);
+        backdrop-filter: blur(12px);
       }
     }
   </style>
@@ -852,25 +1025,48 @@
           The AI core is unstable and its logic is collapsing.
           Identify errors, fix the syntax, and restore control before everything fails.
         </p>
-        <div class="mode-panel">
-          <div class="mode-title">Select Syntax Mode</div>
-          <div class="mode-grid">
-            <button class="mode-button active" type="button" data-language="all">
-              <strong>All Syntax</strong>
-              <span>Mixed Python, Java, and HTML syntax questions.</span>
-            </button>
-            <button class="mode-button" type="button" data-language="python">
-              <strong>Python</strong>
-              <span>Only Python syntax questions in this run.</span>
-            </button>
-            <button class="mode-button" type="button" data-language="java">
-              <strong>Java</strong>
-              <span>Only Java syntax questions in this run.</span>
-            </button>
-            <button class="mode-button" type="button" data-language="html">
-              <strong>HTML</strong>
-              <span>Only HTML syntax questions in this run.</span>
-            </button>
+        <div class="selector-stack">
+          <div class="mode-panel">
+            <div class="mode-title">Select Syntax Mode</div>
+            <div class="mode-grid">
+              <button class="mode-button active" type="button" data-language="all">
+                <strong>All Syntax</strong>
+                <span>Mixed Python, Java, and HTML syntax questions.</span>
+              </button>
+              <button class="mode-button" type="button" data-language="python">
+                <strong>Python</strong>
+                <span>Only Python syntax questions in this run.</span>
+              </button>
+              <button class="mode-button" type="button" data-language="java">
+                <strong>Java</strong>
+                <span>Only Java syntax questions in this run.</span>
+              </button>
+              <button class="mode-button" type="button" data-language="html">
+                <strong>HTML</strong>
+                <span>Only HTML syntax questions in this run.</span>
+              </button>
+            </div>
+          </div>
+          <div class="mode-panel">
+            <div class="mode-title">Select Player Level</div>
+            <div class="mode-grid">
+              <button class="mode-button active" type="button" data-skill="basic">
+                <strong>Basic</strong>
+                <span>Very easy syntax questions and more forgiving pacing.</span>
+              </button>
+              <button class="mode-button" type="button" data-skill="moderate">
+                <strong>Moderate</strong>
+                <span>Easy to medium syntax questions for steady practice.</span>
+              </button>
+              <button class="mode-button" type="button" data-skill="difficult">
+                <strong>Difficult</strong>
+                <span>Higher-level syntax questions with tighter pressure.</span>
+              </button>
+              <button class="mode-button" type="button" data-skill="mixed">
+                <strong>Mixed</strong>
+                <span>Full level progression from easy through difficult.</span>
+              </button>
+            </div>
           </div>
         </div>
         <button id="startButton" class="button primary">Start Game</button>
@@ -906,6 +1102,12 @@
           <div class="stat-card">
             <div class="stat-label">Score</div>
             <div id="scoreValue" class="stat-value">0</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label">Current Level</div>
+            <div id="levelValue" class="stat-value">1</div>
+            <div id="levelHint" class="stat-subvalue">Level 1: System Boot</div>
           </div>
 
           <div class="stat-card">
@@ -957,6 +1159,10 @@
           </section>
 
           <div id="feedbackPanel" class="feedback-panel">Waiting for your first intervention...</div>
+          <div class="mobile-action-bar">
+            <button id="mobileRestartButton" class="button primary" type="button">Restart</button>
+            <button id="mobileQuitButton" class="button secondary" type="button">Quit To Home</button>
+          </div>
         </main>
       </div>
     </section>
@@ -989,8 +1195,10 @@
         },
         startButton: document.getElementById("startButton"),
         restartButton: document.getElementById("restartButton"),
+        mobileRestartButton: document.getElementById("mobileRestartButton"),
         homeButton: document.getElementById("homeButton"),
         quitButton: document.getElementById("quitButton"),
+        mobileQuitButton: document.getElementById("mobileQuitButton"),
         gameCard: document.getElementById("gameCard"),
         categoryLabel: document.getElementById("categoryLabel"),
         statusText: document.getElementById("statusText"),
@@ -999,6 +1207,8 @@
         stabilityValue: document.getElementById("stabilityValue"),
         stabilityFill: document.getElementById("stabilityFill"),
         scoreValue: document.getElementById("scoreValue"),
+        levelValue: document.getElementById("levelValue"),
+        levelHint: document.getElementById("levelHint"),
         roundValue: document.getElementById("roundValue"),
         streakValue: document.getElementById("streakValue"),
         streakHint: document.getElementById("streakHint"),
@@ -1013,7 +1223,15 @@
         finalMessage: document.getElementById("finalMessage")
       };
 
-      const MAX_QUESTIONS = 10;
+      let activeLevels = [];
+
+      function getActiveLevels() {
+        return activeLevels;
+      }
+
+      function getMaxQuestions() {
+        return getActiveLevels().reduce((total, level) => total + level.questions, 0);
+      }
 
       const MODE_LABELS = {
         all: "All Syntax",
@@ -1021,6 +1239,162 @@
         java: "Java",
         html: "HTML"
       };
+
+      const SKILL_LABELS = {
+        basic: "Basic",
+        moderate: "Moderate",
+        difficult: "Difficult",
+        mixed: "Mixed"
+      };
+
+      const DIFFICULTY_LABELS = {
+        1: "Easy",
+        2: "Moderate",
+        3: "Difficult"
+      };
+
+      const BASE_LEVELS = [
+        {
+          name: "System Boot",
+          questions: 4,
+          timer: 25,
+          minDifficulty: 1,
+          maxDifficulty: 1,
+          scoreBonus: 0,
+          stabilityPenalty: 10,
+          message: "Level 1 online. Restore baseline syntax before the core warms up."
+        },
+        {
+          name: "Containment Breach",
+          questions: 4,
+          timer: 20,
+          minDifficulty: 1,
+          maxDifficulty: 2,
+          scoreBonus: 5,
+          stabilityPenalty: 12,
+          message: "Level 2 unlocked. Corruption is spreading and logic pressure is climbing."
+        },
+        {
+          name: "Core Meltdown",
+          questions: 4,
+          timer: 15,
+          minDifficulty: 2,
+          maxDifficulty: 3,
+          scoreBonus: 10,
+          stabilityPenalty: 15,
+          message: "Final level. Critical syntax faults are hitting the unstable AI core."
+        }
+      ];
+
+      const SKILL_PRESETS = {
+        basic: {
+          levels: [
+            {
+              name: "Easy Start",
+              questions: 4,
+              timer: 30,
+              minDifficulty: 1,
+              maxDifficulty: 1,
+              scoreBonus: 0,
+              stabilityPenalty: 7,
+              message: "Basic mode active. Only easy syntax faults are being routed to the player."
+            },
+            {
+              name: "Easy Flow",
+              questions: 4,
+              timer: 28,
+              minDifficulty: 1,
+              maxDifficulty: 1,
+              scoreBonus: 2,
+              stabilityPenalty: 8,
+              message: "Basic mode continues with gentle pacing and easy syntax repair."
+            },
+            {
+              name: "Easy Finish",
+              questions: 4,
+              timer: 26,
+              minDifficulty: 1,
+              maxDifficulty: 1,
+              scoreBonus: 4,
+              stabilityPenalty: 9,
+              message: "Finish strong. The system is still only surfacing easy syntax issues."
+            }
+          ]
+        },
+        moderate: {
+          levels: [
+            {
+              name: "Steady Start",
+              questions: 4,
+              timer: 26,
+              minDifficulty: 1,
+              maxDifficulty: 1,
+              scoreBonus: 0,
+              stabilityPenalty: 9,
+              message: "Moderate mode begins with accessible syntax repairs."
+            },
+            {
+              name: "Pressure Build",
+              questions: 4,
+              timer: 22,
+              minDifficulty: 1,
+              maxDifficulty: 2,
+              scoreBonus: 4,
+              stabilityPenalty: 11,
+              message: "Moderate mode is now mixing easy and medium syntax faults."
+            },
+            {
+              name: "Sharp Focus",
+              questions: 4,
+              timer: 18,
+              minDifficulty: 2,
+              maxDifficulty: 2,
+              scoreBonus: 7,
+              stabilityPenalty: 13,
+              message: "Stay sharp. Medium-level syntax faults now dominate the feed."
+            }
+          ]
+        },
+        difficult: {
+          levels: [
+            {
+              name: "Rapid Boot",
+              questions: 4,
+              timer: 20,
+              minDifficulty: 2,
+              maxDifficulty: 2,
+              scoreBonus: 6,
+              stabilityPenalty: 12,
+              message: "Difficult mode starts fast with medium-level faults immediately."
+            },
+            {
+              name: "Critical Surge",
+              questions: 4,
+              timer: 16,
+              minDifficulty: 2,
+              maxDifficulty: 3,
+              scoreBonus: 10,
+              stabilityPenalty: 14,
+              message: "Difficult mode escalation detected. Critical syntax pressure is rising."
+            },
+            {
+              name: "Hard Shutdown",
+              questions: 4,
+              timer: 13,
+              minDifficulty: 3,
+              maxDifficulty: 3,
+              scoreBonus: 14,
+              stabilityPenalty: 16,
+              message: "Only difficult syntax faults remain. Final-stage precision required."
+            }
+          ]
+        },
+        mixed: {
+          levels: BASE_LEVELS
+        }
+      };
+
+      activeLevels = SKILL_PRESETS.basic.levels.map((level) => ({ ...level }));
 
       const QUESTION_BANK = [
         {
@@ -1508,9 +1882,11 @@
         score: 0,
         stability: 100,
         round: 0,
+        levelIndex: 0,
         currentQuestion: null,
         sessionQuestions: [],
         selectedLanguage: "all",
+        selectedSkill: "basic",
         streak: 0,
         bestStreak: 0,
         timerLimit: 25,
@@ -1567,9 +1943,11 @@
 
       function initializeGame() {
         clearInterval(game.timerInterval);
+        activeLevels = SKILL_PRESETS[game.selectedSkill].levels.map((level) => ({ ...level }));
         game.score = 0;
         game.stability = 100;
         game.round = 0;
+        game.levelIndex = 0;
         game.currentQuestion = null;
         game.sessionQuestions = buildSessionQuestions();
         game.streak = 0;
@@ -1590,46 +1968,87 @@
         nextQuestion();
       }
 
-      function getDifficultyTier() {
-        const progress = game.round;
-        const jitter = Math.random();
-        if (progress >= 10 && jitter > 0.2) return 3;
-        if (progress >= 5 && jitter > 0.28) return 2;
-        return 1;
+      function getCurrentLevel() {
+        const levels = getActiveLevels();
+        return levels[game.levelIndex] || levels[levels.length - 1];
       }
 
       function getTimerForRound() {
-        return 25;
+        return getCurrentLevel().timer;
+      }
+
+      function getLevelStartRound(levelIndex) {
+        return getActiveLevels().slice(0, levelIndex).reduce((total, level) => total + level.questions, 0);
+      }
+
+      function updateLevelIndex() {
+        const levels = getActiveLevels();
+        let accumulated = 0;
+        for (let index = 0; index < levels.length; index += 1) {
+          accumulated += levels[index].questions;
+          if (game.round < accumulated) {
+            game.levelIndex = index;
+            return;
+          }
+        }
+        game.levelIndex = levels.length - 1;
       }
 
       function buildSessionQuestions() {
         const fixedSyntaxQuestions = QUESTION_BANK.filter((question) => question.category === "Code Debugging");
         const generatedSyntaxQuestions = buildGeneratedSyntaxQuestions();
-        const combined = shuffleArray(
+        const source = shuffleArray(
           [...fixedSyntaxQuestions, ...generatedSyntaxQuestions].filter((question) => {
             if (game.selectedLanguage === "all") return true;
             return detectQuestionLanguage(question) === game.selectedLanguage;
           })
         );
-        const uniqueQuestions = [];
-        const seenPrompts = new Set();
+        const pools = {
+          1: [],
+          2: [],
+          3: []
+        };
 
-        combined.forEach((question) => {
-          if (uniqueQuestions.length >= MAX_QUESTIONS) return;
-          if (seenPrompts.has(question.prompt)) return;
-          seenPrompts.add(question.prompt);
-          uniqueQuestions.push(question);
+        source.forEach((question) => {
+          const bucket = Math.min(3, Math.max(1, question.difficulty));
+          pools[bucket].push(question);
         });
 
-        return uniqueQuestions;
+        const session = [];
+        const usedPrompts = new Set();
+
+        getActiveLevels().forEach((level) => {
+          const candidates = source.filter((question) =>
+            question.difficulty >= level.minDifficulty &&
+            question.difficulty <= level.maxDifficulty &&
+            !usedPrompts.has(question.prompt)
+          );
+
+          candidates.slice(0, level.questions).forEach((question) => {
+            session.push(question);
+            usedPrompts.add(question.prompt);
+          });
+        });
+
+        if (session.length < getMaxQuestions()) {
+          source.forEach((question) => {
+            if (session.length >= getMaxQuestions()) return;
+            if (usedPrompts.has(question.prompt)) return;
+            session.push(question);
+            usedPrompts.add(question.prompt);
+          });
+        }
+
+        return session;
       }
 
       function nextQuestion() {
-        if (game.round >= MAX_QUESTIONS) {
+        if (game.round >= getMaxQuestions()) {
           endGame();
           return;
         }
 
+        updateLevelIndex();
         game.answeringLocked = false;
         game.lowTimeBeeped = false;
         game.timerLimit = getTimerForRound();
@@ -1644,7 +2063,8 @@
 
         ui.categoryLabel.textContent = `${MODE_LABELS[game.selectedLanguage]} Mode`;
         ui.questionText.innerHTML = formatPromptText(game.currentQuestion.prompt);
-        ui.questionMeta.textContent = `Syntax Challenge ${game.round + 1} / ${MAX_QUESTIONS} // Level ${Math.min(3, Math.max(1, game.currentQuestion.difficulty))}`;
+        const questionDifficulty = Math.min(3, Math.max(1, game.currentQuestion.difficulty));
+        ui.questionMeta.textContent = `${getCurrentLevel().name} // Question ${game.round + 1} / ${getMaxQuestions()} // ${DIFFICULTY_LABELS[questionDifficulty]}`;
         ui.answerGrid.innerHTML = "";
 
         game.currentQuestion.options.forEach((option, index) => {
@@ -1704,27 +2124,35 @@
           }
         });
 
+        const level = getCurrentLevel();
+
         if (isCorrect) {
-          game.score += 10;
+          game.score += 10 + level.scoreBonus;
           game.stability = Math.min(100, game.stability + 5);
           game.streak += 1;
           game.bestStreak = Math.max(game.bestStreak, game.streak);
           selectedButton.classList.add("correct");
           setStatus(randomFrom(messages.correct));
-          setFeedback(`<strong>Correct.</strong> ${game.currentQuestion.explanation} Stability +5 | Score +10`, true);
+          setFeedback(`<strong>Correct.</strong> ${game.currentQuestion.explanation} Stability +5 | Score +${10 + level.scoreBonus}`, true);
           renderFeed(`Round ${game.round + 1}: recovery action succeeded.`, "positive");
         } else {
-          game.stability -= 10;
+          game.stability -= level.stabilityPenalty;
           game.streak = 0;
           selectedButton.classList.add("wrong");
           triggerGlitch();
           setStatus(randomFrom(messages.wrong));
-          setFeedback(`<strong>Wrong choice.</strong> ${game.currentQuestion.explanation} Stability -10`, false);
+          setFeedback(`<strong>Wrong choice.</strong> ${game.currentQuestion.explanation} Stability -${level.stabilityPenalty}`, false);
           renderFeed(`Round ${game.round + 1}: logic fault amplified.`, "danger");
         }
 
         game.round += 1;
+        const previousLevelIndex = game.levelIndex;
+        updateLevelIndex();
         updateHUD();
+        if (game.round < getMaxQuestions() && game.levelIndex !== previousLevelIndex) {
+          renderFeed(`Level ${game.levelIndex + 1}: ${getCurrentLevel().name} engaged.`, "warning");
+          setFeedback(`<strong>Level Up.</strong> ${getCurrentLevel().message}`, true);
+        }
         scheduleNextState();
       }
 
@@ -1732,11 +2160,12 @@
         if (game.answeringLocked || !game.currentQuestion) return;
 
         game.answeringLocked = true;
-        game.stability -= 10;
+        const level = getCurrentLevel();
+        game.stability -= level.stabilityPenalty;
         game.streak = 0;
         triggerGlitch();
         setStatus(randomFrom(messages.timeout));
-        setFeedback(`<strong>Timeout.</strong> ${game.currentQuestion.explanation} Stability -10`, false);
+        setFeedback(`<strong>Timeout.</strong> ${game.currentQuestion.explanation} Stability -${level.stabilityPenalty}`, false);
         renderFeed(`Round ${game.round + 1}: no intervention received.`, "warning");
 
         [...ui.answerGrid.children].forEach((button, index) => {
@@ -1748,13 +2177,19 @@
         });
 
         game.round += 1;
+        const previousLevelIndex = game.levelIndex;
+        updateLevelIndex();
         updateHUD();
+        if (game.round < getMaxQuestions() && game.levelIndex !== previousLevelIndex) {
+          renderFeed(`Level ${game.levelIndex + 1}: ${getCurrentLevel().name} engaged.`, "warning");
+          setFeedback(`<strong>Level Up.</strong> ${getCurrentLevel().message}`, true);
+        }
         scheduleNextState();
       }
 
       function scheduleNextState() {
         setTimeout(() => {
-          if (game.round >= MAX_QUESTIONS) {
+          if (game.round >= getMaxQuestions()) {
             endGame();
           } else {
             nextQuestion();
@@ -1774,41 +2209,47 @@
 
       function getPerformanceSummary() {
         if (game.score >= 60) {
-          return `Elite syntax recovery performance. You cleared the full debugging sequence with a best streak of ${game.bestStreak}.`;
+          return `Elite syntax recovery performance. You cleared all ${getActiveLevels().length} levels with a best streak of ${game.bestStreak}.`;
         }
         if (game.score >= 40) {
-          return `Strong syntax containment work. Most compiler-level faults were repaired before the rogue system spread further. Best streak: ${game.bestStreak}.`;
+          return `Strong syntax containment work. You pushed through deep into the level ladder before the rogue core escalated. Best streak: ${game.bestStreak}.`;
         }
         if (game.score >= 20) {
-          return `Partial stabilization achieved. You fixed some syntax faults, but the AI still leaked instability through the stack. Best streak: ${game.bestStreak}.`;
+          return `Partial stabilization achieved. Several levels were stabilized, but high-tier faults still leaked through the stack. Best streak: ${game.bestStreak}.`;
         }
         return `Containment pressure stayed high. Too many syntax faults slipped through before the final review window closed. Best streak: ${game.bestStreak}.`;
       }
 
       function getFinalMessage() {
-        if (game.score >= 60) return "AI Recovery Successful! All syntax checkpoints completed.";
-        if (game.score >= 40) return "System bruised, but standing. Most syntax errors were corrected in time.";
-        if (game.score >= 20) return "Critical systems remain online. A cleaner syntax pass could fully stabilize the core.";
+        if (game.score >= 60) return "AI Recovery Successful! All levels cleared and the syntax core is under control.";
+        if (game.score >= 40) return "System bruised, but standing. You survived most of the escalation ladder.";
+        if (game.score >= 20) return "Critical systems remain online. A stronger late-game run could clear the higher levels.";
         return "Critical Error Detected! The rogue intelligence breached the final safety threshold.";
       }
 
       function updateHUD() {
+        const level = getCurrentLevel();
+        const levelStart = getLevelStartRound(game.levelIndex);
+        const roundInLevel = Math.min(level.questions, Math.max(0, game.round - levelStart));
+
         ui.scoreValue.textContent = String(game.score);
-        ui.roundValue.textContent = `${game.round}/${MAX_QUESTIONS}`;
+        ui.levelValue.textContent = String(game.levelIndex + 1);
+        ui.levelHint.textContent = `${SKILL_LABELS[game.selectedSkill]} // Level ${game.levelIndex + 1}: ${level.name}`;
+        ui.roundValue.textContent = `${roundInLevel}/${level.questions}`;
         ui.streakValue.textContent = String(game.streak);
         ui.stabilityValue.textContent = `${Math.max(0, game.stability)}%`;
         ui.stabilityFill.style.width = `${Math.max(0, game.stability)}%`;
         ui.streakHint.textContent = game.streak >= 3
           ? `Excellent rhythm. Best streak ${game.bestStreak}.`
-          : "Build a clean streak for stronger operator confidence.";
+          : `Level reward +${level.scoreBonus} score | timer ${level.timer}s`;
 
         ui.progressSteps.innerHTML = "";
-        for (let index = 0; index < MAX_QUESTIONS; index += 1) {
+        for (let index = 0; index < getMaxQuestions(); index += 1) {
           const step = document.createElement("span");
           step.className = "progress-step";
           if (index < game.round) {
             step.classList.add("done");
-          } else if (index === game.round && game.round < MAX_QUESTIONS) {
+          } else if (index === game.round && game.round < getMaxQuestions()) {
             step.classList.add("current");
           }
           ui.progressSteps.appendChild(step);
@@ -1890,7 +2331,18 @@
       function setLanguageMode(language) {
         game.selectedLanguage = language;
         document.querySelectorAll(".mode-button").forEach((button) => {
-          button.classList.toggle("active", button.dataset.language === language);
+          if (button.dataset.language) {
+            button.classList.toggle("active", button.dataset.language === language);
+          }
+        });
+      }
+
+      function setSkillMode(skill) {
+        game.selectedSkill = skill;
+        document.querySelectorAll(".mode-button").forEach((button) => {
+          if (button.dataset.skill) {
+            button.classList.toggle("active", button.dataset.skill === skill);
+          }
         });
       }
 
@@ -1955,10 +2407,17 @@
 
       ui.startButton.addEventListener("click", initializeGame);
       ui.restartButton.addEventListener("click", initializeGame);
+      ui.mobileRestartButton.addEventListener("click", initializeGame);
       ui.homeButton.addEventListener("click", returnToHome);
       ui.quitButton.addEventListener("click", returnToHome);
+      ui.mobileQuitButton.addEventListener("click", returnToHome);
       document.querySelectorAll(".mode-button").forEach((button) => {
-        button.addEventListener("click", () => setLanguageMode(button.dataset.language));
+        if (button.dataset.language) {
+          button.addEventListener("click", () => setLanguageMode(button.dataset.language));
+        }
+        if (button.dataset.skill) {
+          button.addEventListener("click", () => setSkillMode(button.dataset.skill));
+        }
       });
 
       document.addEventListener("visibilitychange", () => {
